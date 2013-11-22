@@ -7,20 +7,14 @@
 #ifndef DEPTHCONVERTER_HPP_
 #define DEPTHCONVERTER_HPP_
 
-/*
+
 #include "Component_Aux.hpp"
 #include "Component.hpp"
-#include "Panel_Empty.hpp"
+//#include "Panel_Empty.hpp" ///
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
-*/
-#include <Component_Aux.hpp>
-#include <Component.hpp>
-#include <Panel_Empty.hpp>
-#include <DataStream.hpp>
-#include <Property.hpp>
-#include <EventHandler2.hpp>
+
 
 #include <Types/CameraInfo.hpp>
 
