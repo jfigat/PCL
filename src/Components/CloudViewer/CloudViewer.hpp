@@ -71,11 +71,13 @@ protected:
 	Base::DataStreamIn< pcl::PointCloud<pcl::PointXYZ>::Ptr > in_cloud_xyz;
 	Base::DataStreamIn< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > in_cloud_xyzrgb;
 	Base::DataStreamIn< pcl::PointCloud<pcl::Normal>::Ptr > in_cloud_normals;
+	Base::DataStreamIn< pcl::PointCloud<pcl::Normal>::Ptr > in_cloud_xyz_normals;
 
 	// Handlers
 	Base::EventHandler2 h_on_cloud_xyz;
 	Base::EventHandler2 h_on_cloud_xyzrgb;
 	Base::EventHandler2 h_on_cloud_normals;
+	Base::EventHandler2 h_on_cloud_xyz_normals;
 	Base::EventHandler2 h_on_spin;
 
 	
@@ -83,6 +85,7 @@ protected:
 	void on_cloud_xyz();
 	void on_cloud_xyzrgb();
 	void on_cloud_normals();
+	void on_cloud_xyz_normals();
 	void on_spin();
 
 

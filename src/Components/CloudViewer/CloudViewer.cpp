@@ -2,6 +2,8 @@
  * \file
  * \brief
  * \author Maciej Stefańczyk [maciek.slon@gmail.com]
+ * modified by Jan Figat
+ *      added normals visualisation
  */
 
 #include <memory>
@@ -31,6 +33,7 @@ void CloudViewer::prepareInterface() {
 	registerStream("in_cloud_xyz", &in_cloud_xyz);
 	registerStream("in_cloud_xyzrgb", &in_cloud_xyzrgb);
 	registerStream("in_cloud_normals", &in_cloud_normals);
+	registerStream("in_cloud_xyz_normals", &in_cloud_xyz_normals);
 
 	// Register handlers
 	h_on_cloud_xyz.setup(boost::bind(&CloudViewer::on_cloud_xyz, this));
@@ -42,6 +45,9 @@ void CloudViewer::prepareInterface() {
 	h_on_cloud_normals.setup(boost::bind(&CloudViewer::on_cloud_normals, this));
 	registerHandler("on_cloud_normals", &h_on_cloud_normals);
 	addDependency("on_cloud_normals", &in_cloud_normals);
+	h_on_cloud_xyz_normals.setup(boost::bind(&CloudViewer::on_cloud_xyz_normals, this));
+	        registerHandler("on_cloud_xyz_normals", &h_on_cloud_xyz_normals);
+	        addDependency("on_cloud_xyz_normals", &in_cloud_xyz_normals);
 	h_on_spin.setup(boost::bind(&CloudViewer::on_spin, this));
 	registerHandler("on_spin", &h_on_spin);
 	addDependency("on_spin", NULL);
@@ -80,24 +86,31 @@ void CloudViewer::on_cloud_xyz() {
 	//viewer->updatePointCloud<pcl::PointXYZ> (cloud, "sample cloud");
 
 	if(!initd) {
+	    Eigen::Vector4f origin;
+	    Eigen::Quaternionf orientation;
+	    Eigen::Matrix3f rotation;
 			CLOG(LDEBUG) << "Init!";
 			initd = true;
 			CLOG(LDEBUG) << "Init!";
 			viewer = new pcl::visualization::PCLVisualizer ("3D Viewer");
 			CLOG(LDEBUG) << "Init!";
-			viewer->setBackgroundColor (1, 1, 0); // (0, 0, 0);
+
 			pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(cloud, 255, 0, 0);
 			CLOG(LDEBUG) << "Init!";
 			viewer->addPointCloud<pcl::PointXYZ> (cloud, single_color, "cloud");
 			//viewer->addPointCloud<pcl::PointXYZ> (cloud, "cloud");
 			CLOG(LDEBUG) << "Init!";
-			viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
+			viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "cloud");
 			CLOG(LDEBUG) << "Init!";
 			viewer->addCoordinateSystem (1.0,0);
 			CLOG(LDEBUG) << "Init!";
+
 			viewer->initCameraParameters ();
 			CLOG(LDEBUG) << "Init!";
-			//viewer->resetCameraViewpoint();
+			//viewer->setCameraPosition(0, 0, 0, 0, -1, 0); ///changing orientation
+			                                                //setCameraPosition (double posX,double posY, double posZ, double viewX, double viewY, double viewZ);
+			                                                //X (red), Y (green) and Z (blue) axes
+			viewer->setCameraPosition(0, 0, -1, 0, -1, 0);//changing orientation
 		} else {
 			viewer->updatePointCloud<pcl::PointXYZ> (cloud, "cloud");
 
@@ -117,18 +130,20 @@ void CloudViewer::on_cloud_xyzrgb() {
 		//CLOG(LDEBUG) << "Init!";
 		viewer = new pcl::visualization::PCLVisualizer ("3D Viewer - RGB");
 		//CLOG(LDEBUG) << "Init!";
-		viewer->setBackgroundColor (1,1,1);//(0, 0, 0);
+		viewer->setBackgroundColor (0.0, 0.0, 0.5);//1,1,1);
+		CLOG(LDEBUG) << "Init!";
+		pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB>::Ptr handler;// rgb(cloud);
+		handler.reset(new pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> (cloudRGB));
 		//CLOG(LDEBUG) << "Init!";
-		//pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
-		//CLOG(LDEBUG) << "Init!";
-		viewer->addPointCloud<pcl::PointXYZRGB> (cloudRGB, rgb, "cloud RGB");
+		viewer->addPointCloud<pcl::PointXYZRGB> (cloudRGB, *handler /*rgb*/, "RGB cloud ");
 		//CLOG(LDEBUG) << "Init!";
 		viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud RGB");
 		//CLOG(LDEBUG) << "Init!";
 		viewer->addCoordinateSystem (1.0);
 		//CLOG(LDEBUG) << "Init!";
 		viewer->initCameraParameters ();
-		//CLOG(LDEBUG) << "Init!";
+		CLOG(LDEBUG) << "Init!";
+		viewer->setCameraPosition(0, 0, -1, 0, -1, 0);
 	} else {
 		viewer->updatePointCloud<pcl::PointXYZRGB> (cloudRGB, rgb, "cloud RGB");
 	}
@@ -137,7 +152,45 @@ void CloudViewer::on_cloud_xyzrgb() {
 void CloudViewer::on_cloud_normals() {
 	// -----Open 3D viewer and add point cloud and normals-----
 
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud = in_cloud_xyzrgb.read();
+          pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = in_cloud_xyz.read();
+          pcl::PointCloud<pcl::Normal>::Ptr normals = in_cloud_normals.read();
+          static bool initd2 = false;
+
+          if(!initd2) {
+                      Eigen::Vector4f origin;
+                      Eigen::Quaternionf orientation;
+                      Eigen::Matrix3f rotation;
+                                  CLOG(LDEBUG) << "Init!";
+                                  initd2 = true;
+                                  CLOG(LDEBUG) << "Init!";
+                                  viewer = new pcl::visualization::PCLVisualizer ("3D Viewer");
+                                  CLOG(LDEBUG) << "Init!";
+
+                                  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(cloud, 255, 0, 0);
+                                  CLOG(LDEBUG) << "Init!";
+                                  // visualize normals
+                                            viewer->setBackgroundColor (0.0, 0.0, 0.5);
+                                            viewer->addPointCloudNormals<pcl::PointXYZ,pcl::Normal>(cloud, normals);
+                                  CLOG(LDEBUG) << "Init!";
+                                  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "cloud");
+                                  CLOG(LDEBUG) << "Init!";
+                                  viewer->addCoordinateSystem (1.0,0);
+                                  CLOG(LDEBUG) << "Init!";
+
+                                  viewer->initCameraParameters ();
+                                  CLOG(LDEBUG) << "Init!";
+                                  //viewer->setCameraPosition(0, 0, 0, 0, -1, 0); ///changing orientation
+                                                                                  //setCameraPosition (double posX,double posY, double posZ, double viewX, double viewY, double viewZ);
+                                                                                  //X (red), Y (green) and Z (blue) axes
+                                  viewer->setCameraPosition(0, 0, -1, 0, -1, 0);//changing orientation
+                          } else {
+                                  viewer->addPointCloudNormals<pcl::PointXYZ,pcl::Normal>(cloud, normals);
+
+                          }
+
+
+
+	/*pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud = in_cloud_xyzrgb.read();
 	pcl::PointCloud<pcl::Normal>::Ptr normals = in_cloud_normals.read();
 
 	//boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
@@ -147,14 +200,39 @@ void CloudViewer::on_cloud_normals() {
 	  pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
 	  viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "sample cloud");
 	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
-	  viewer->addPointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (cloud, normals, 10, 0.05, "normals");
+	  viewer->addPointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (cloud, normals, 10, 0.100.05, "normals");
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
 	  //return (viewer);
 	  viewer->updatePointCloud<pcl::PointXYZRGB> (cloud, rgb, "sample cloud");
-	  //viewer->updatePointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (cloud, normals, 10, 0.05, "normals");
+	  //viewer->updatePointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (cloud, normals, 10, 0.05, "normals");*/
 
 }
+
+void CloudViewer::on_cloud_xyz_normals() {
+        // -----Open 3D viewer and add point cloud and normals-----
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = in_cloud_xyz.read();
+        pcl::PointCloud<pcl::Normal>::Ptr normals = in_cloud_normals.read();
+
+        //boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+        viewer = new pcl::visualization::PCLVisualizer ("3D Viewer");
+
+          viewer->setBackgroundColor (0, 0, 0);
+          //pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
+          pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> single_color(cloud, 255, 0, 0);
+          CLOG(LDEBUG) << "Init!";
+          viewer->addPointCloud<pcl::PointXYZ> (cloud, single_color, "sample cloud");
+          viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
+          viewer->addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (cloud, normals, 10, 0.10/*0.05*/, "normals");
+          viewer->addCoordinateSystem (1.0);
+          viewer->initCameraParameters ();
+          //return (viewer);
+          viewer->updatePointCloud<pcl::PointXYZ> (cloud, single_color, "sample cloud");
+          //viewer->updatePointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (cloud, normals, 10, 0.05, "normals");
+
+}
+
 
 void CloudViewer::on_spin() {
 	if(viewer)viewer->spinOnce (1);
