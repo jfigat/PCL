@@ -36,6 +36,7 @@
 #include <pcl/console/parse.h>
 
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/histogram_visualizer.h>
 
 
 namespace Processors {
@@ -84,24 +85,17 @@ protected:
 	bool onStop();
 
 	// Data streams
-//	Base::DataStreamIn<cv::Mat> in_color;
-	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZ>::Ptr > out_cloud_xyz;
-	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZRGB>::Ptr > out_cloud_xyzrgb;
-	Base::DataStreamOut<pcl::PointCloud<pcl::VFHSignature308>::Ptr > out_features;
-
 
 	// Input data streams
-	Base::DataStreamIn<cv::Mat> in_depth;
-	Base::DataStreamIn<Types::CameraInfo> in_camera_info;
-//	Base::DataStreamIn<pcl::PointCloud<pcl::PointXYZ>::Ptr> in_pcl;
+        Base::DataStreamIn< pcl::PointCloud<pcl::PointXYZ>::Ptr > in_cloud_xyz;
+        Base::DataStreamIn< pcl::PointCloud<pcl::Normal>::Ptr > in_cloud_normals;
 
 	// Output data streams
 	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZ>::Ptr> out_keypoints;
-	Base::DataStreamOut<pcl::PointCloud<pcl::Normal>::Ptr> out_normals;
+        Base::DataStreamOut<pcl::PointCloud<pcl::VFHSignature308>::Ptr > out_features;
 
 	// Handlers
 	Base::EventHandler2 h_process_VFH;
-	Base::EventHandler2 h_process_all;
 
 
 	// Handlers

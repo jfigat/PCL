@@ -86,7 +86,6 @@ protected:
 //	Base::DataStreamIn<cv::Mat> in_color;
 	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZ>::Ptr > out_cloud_xyz;
 	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZRGB>::Ptr > out_cloud_xyzrgb;
-	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > out_cloud_xyzrgba;
 
 
 	// Input data streams
