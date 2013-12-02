@@ -18,7 +18,6 @@
 typedef pcl::PointXYZ PointType;
 typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
-typedef pcl::VFHSignature308 DescriptorType;
 
 namespace Processors {
 namespace Normals_PCL {
@@ -74,8 +73,6 @@ bool Normals_PCL::onStart() {
 void Normals_PCL::process_Normals() {
 	LOG(LTRACE) << "Normals_PCL::process_Normals\n";
 
-	//pcl::PointCloud<PointType>::Ptr cloud = in_pcl.read();
-
 	Types::CameraInfo camera_info = in_camera_info.read();
 	cv::Mat depth = in_depth.read();
 	cv::Mat color = in_color.read();
@@ -111,17 +108,12 @@ void Normals_PCL::process_Normals() {
 		}
 	}
 
-
-	pcl::PointCloud<PointType>::Ptr keypoints (new pcl::PointCloud<PointType> ());
-	pcl::PointCloud<DescriptorType>::Ptr descriptors (new pcl::PointCloud<DescriptorType> ());
-
 	float model_ss_ = 0.01f;
 	float descr_rad_ = 0.02f;
 	std::vector<int> aux_indices;
 
 	pcl::removeNaNFromPointCloud (*cloud, *cloud, aux_indices); // removing wrong points from the cloud
 	pcl::io::savePCDFileASCII ("/home/jfigat/DCL/PCL/my_cloud.pcd", *cloud);
-	CLOG(LTRACE) << "Cloud readed\n";
 
 	// estimate normals
 	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
@@ -147,14 +139,11 @@ void Normals_PCL::process_Normals() {
     //    pcl::removeNaNNormalsFromPointCloud (*normals, *normals, aux_indices); //removing wrong normals from the cloud with normals
 	      //[addPointCloudNormals] The number of points differs from the number of normals!
 
-       // CLOG(LNOTICE) <<" compute normals"<<normals->points.size ()<<" test";
-
 	pcl::io::savePCDFileASCII ("/home/jfigat/DCL/PCL/my_normal.pcd", *normals);
-//	cout<<" copy point from the cloud to the cloud with normals"<<endl;
-//	pcl::copyPointCloud (*cloud, *normals);
+	pcl::copyPointCloud (*cloud, *normals); //copy point from the cloud to the cloud with normals
 	out_normals.write(normals);
 	out_cloud_xyz.write(cloud);
-	CLOG(LTRACE) << "Cloud written\n";
+
 
 
 
@@ -192,10 +181,7 @@ void Normals_PCL::process_Normals() {
         pclviewer.addPointCloudNormals<pcl::PointXYZRGBA,pcl::Normal>(cloud_rgb, normals_rgb);
 
 	out_cloud_xyzrgba.write(cloud_rgb);*/
-
 }
-
-
 
 
 } //: namespace Normals_PCL

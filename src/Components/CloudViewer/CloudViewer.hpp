@@ -2,6 +2,8 @@
  * \file
  * \brief 
  * \author Maciej Stefańczyk [maciek.slon@gmail.com]
+ * * modified by Jan Figat
+ *
  */
 
 #ifndef CLOUDVIEWER_HPP_
@@ -87,7 +89,6 @@ protected:
 	void on_cloud_normals();
 	void on_cloud_xyz_normals();
 	void on_spin();
-
 
 	pcl::visualization::PCLVisualizer * viewer;
 };
