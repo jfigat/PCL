@@ -76,11 +76,8 @@ protected:
 	Base::DataStreamOut<pcl::PointCloud<pcl::PointXYZRGB>::Ptr > out_cloud_xyzrgb;
 
 	// Handlers
-	Base::EventHandler2 h_process_depth;
 	Base::EventHandler2 h_process_all;
-
-	
-	// Handlers
+	Base::EventHandler2 h_process_depth;
 	void process_depth();
 	void process_all();
 
