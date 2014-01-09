@@ -10,7 +10,6 @@
 
 #include "Component_Aux.hpp"
 #include "Component.hpp"
-//#include "Panel_Empty.hpp" ///
 #include "DataStream.hpp"
 #include "Property.hpp"
 #include "EventHandler2.hpp"
@@ -21,6 +20,8 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/filter.h>  // for removeNaNFromPointCloud
 #include <pcl/features/integral_image_normal.h> //for IntegralImageNormalEstimation
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/impl/kdtree_flann.hpp>
 
 #include <pcl/correspondence.h>
 #include <pcl/features/normal_3d.h> //for normal estimation
@@ -28,13 +29,10 @@
 #include <pcl/keypoints/uniform_sampling.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/recognition/cg/geometric_consistency.h>
-#include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/kdtree/kdtree_flann.h>
-#include <pcl/kdtree/impl/kdtree_flann.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/console/parse.h>
 
-#include <pcl/visualization/pcl_visualizer.h> //viewer
+//#include <pcl/visualization/pcl_visualizer.h> //viewer
 
 
 namespace Processors {

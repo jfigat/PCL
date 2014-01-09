@@ -147,7 +147,7 @@ void DepthConverter::process_all() {
                                 continue;
                         }
 
-                        // Fill in XYZ
+                        // Fill in XYZRGB
                         pt.x = (u - cx_d) * depth * fx_d;
                         pt.y = (v - cy_d) * depth * fy_d;
                         pt.z = depth * 0.001;
@@ -160,8 +160,8 @@ void DepthConverter::process_all() {
 
         out_cloud_xyzrgb.write(cloudRGB);
         CLOG(LNOTICE) << "XYZRGB ";
-        //pcl::io::savePCDFileASCII ("/tmp/test2.pcd", *cloud);
-        //CLOG(LNOTICE) << "Points: " << cloud->points.size ();
+        pcl::io::savePCDFileASCII ("/test2.pcd", *cloudRGB);
+        //CLOG(LNOTICE) << "Points: " << cloudRGB->points.size ();
 }
 
 

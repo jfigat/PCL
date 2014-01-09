@@ -46,12 +46,10 @@ void Normals_PCL::prepareInterface() {
 	addDependency("process_Normals", &in_depth);
 	addDependency("process_Normals", &in_color);
 	addDependency("process_Normals", &in_camera_info);
-
 }
 
 bool Normals_PCL::onInit() {
 	LOG(LTRACE) << "Normals_PCL::onInit\n";
-
 	return true;
 }
 
@@ -78,7 +76,6 @@ void Normals_PCL::process_Normals() {
 	cv::Mat color = in_color.read();
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>(camera_info.width(), camera_info.height()));
-//	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_rgb (new pcl::PointCloud<pcl::PointXYZRGB>(camera_info.width(), camera_info.height()));
 
 	double fx_d = 0.001 / camera_info.fx();
 	double fy_d = 0.001 / camera_info.fy();
@@ -126,10 +123,8 @@ void Normals_PCL::process_Normals() {
 	ne.setInputCloud (cloud);
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	ne.setSearchMethod(tree);
-	ne.setKSearch (20); //Use 20 nearest neighbors
-	ne.setRadiusSearch (0);
-	//ne.setKSearch (0); //[pcl::IntegralImagesNormalEstimation::compute] Both radius (0.500000) and K (1) defined! Set one of them to zero first and then re-run compute ().
-	//ne.setRadiusSearch (1);//0.10); //10cm
+	ne.setKSearch (10); //Use 10 nearest neighbors
+	ne.setRadiusSearch (0.0); // 0[cm] (0.0*10 [cm])
 
 	ne.compute (*normals);
 	CLOG(LTRACE) << "Normals computed\n";
@@ -139,48 +134,10 @@ void Normals_PCL::process_Normals() {
     //    pcl::removeNaNNormalsFromPointCloud (*normals, *normals, aux_indices); //removing wrong normals from the cloud with normals
 	      //[addPointCloudNormals] The number of points differs from the number of normals!
 
-	pcl::io::savePCDFileASCII ("/home/jfigat/DCL/PCL/my_normal.pcd", *normals);
+	pcl::io::savePCDFileASCII ("/home/jfigat/DCL/PCL/my_cloud_normals.pcd", *normals);
 	pcl::copyPointCloud (*cloud, *normals); //copy point from the cloud to the cloud with normals
 	out_normals.write(normals);
 	out_cloud_xyz.write(cloud);
-
-
-
-
-
-        /*pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_rgb(new pcl::PointCloud<pcl::PointXYZRGBA>);
-        cloud_rgb->width = 1; //Dimensions must be initialized to use 2-D indexing
-        cloud_rgb->height = 1;
-        cloud_rgb->resize(cloud_rgb->width*cloud_rgb->height);
-
-        pcl::PointXYZRGBA p = pcl::PointXYZRGBA();
-        p.b = 132;
-        p.g = 232;
-        p.r = 164;
-        p.x = 0;
-        p.y = 0;
-        p.z = 5;
-
-        cloud_rgb->push_back(p);
-
-        pcl::PointCloud<pcl::Normal>::Ptr normals_rgb (new pcl::PointCloud<pcl::Normal>); //Output normals
-        //Create search tree
-        pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree2 (new pcl::search::KdTree<pcl::PointXYZRGBA>);
-
-        //Estimate
-        pcl::NormalEstimation<pcl::PointXYZRGBA, pcl::Normal> normal_estimator;
-        normal_estimator.setInputCloud (cloud_rgb);
-        normal_estimator.setSearchMethod (tree2);
-        normal_estimator.setKSearch (20); //Use 20 nearest neighbors
-        normal_estimator.compute (*normals_rgb);
-
-        pcl::visualization::PCLVisualizer pclviewer("PCL Viewer");
-        pclviewer.setBackgroundColor (0.0, 0.0, 0.5);
-        pclviewer.addPointCloud<pcl::PointXYZRGBA>(cloud_rgb);
-
-        pclviewer.addPointCloudNormals<pcl::PointXYZRGBA,pcl::Normal>(cloud_rgb, normals_rgb);
-
-	out_cloud_xyzrgba.write(cloud_rgb);*/
 }
 
 
